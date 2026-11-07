@@ -2,7 +2,6 @@ public class Tienda {
     private Producto[] productos;
 
     public Tienda() {
-        // Inicialización de al menos 5 productos
         productos = new Producto[5];
         productos[0] = new Producto("0", "Cuaderno UVG", 25.00, 10);
         productos[1] = new Producto("1", "Galleta Nutritiva", 6.00, 20);
@@ -17,51 +16,30 @@ public class Tienda {
 
     public void mostrarCatalogo() {
         System.out.println("\n--- CATÁLOGO DE PRODUCTOS ---");
-        imprimirArreglo(productos);
+        Utilidades.imprimirArreglo(productos);
     }
 
     public void mostrarInventario() {
         System.out.println("\n--- INVENTARIO ACTUALIZADO ---");
-        imprimirArreglo(productos);
+        Utilidades.imprimirArreglo(productos);
     }
 
-    /**
-     * Método genérico para imprimir cualquier arreglo de objetos (cumple requisito técnico).
-     */
-    public <T> void imprimirArreglo(T[] arreglo) {
-        for (T elemento : arreglo) {
-            if (elemento != null) {
-                System.out.println(elemento.toString());
-            }
-        }
-    }
-
-    /**
-     * Valida y procesa la venta de un producto.
-     */
-    public boolean procesarVenta(int indice, int cantidad) {
-        if (indice < 0 || indice >= productos.length) {
-            System.out.println("Error: El producto seleccionado no existe.");
-            return false;
+    public double vender(int posicion, int cantidad) throws CantidadInvalidaException, StockInsuficienteException {
+        if (posicion < 0 || posicion >= productos.length || productos[posicion] == null) {
+            throw new IllegalArgumentException("El producto seleccionado no existe.");
         }
 
         if (cantidad <= 0) {
-            System.out.println("Error: La cantidad debe ser mayor a cero.");
-            return false;
+            throw new CantidadInvalidaException("La cantidad debe ser mayor a cero.");
         }
 
-        Producto producto = productos[indice];
+        Producto p = productos[posicion];
 
-        if (cantidad > producto.getStock()) {
-            System.out.println("Error: Stock insuficiente. Stock actual del " + producto.getNombre() + ": " + producto.getStock());
-            return false;
+        if (cantidad > p.getStock()) {
+            throw new StockInsuficienteException("Stock insuficiente para " + p.getNombre() + " (Disponibles: " + p.getStock() + ").");
         }
 
-        producto.reducirStock(cantidad);
-        double total = producto.getPrecio() * cantidad;
-        System.out.println("\n¡Venta registrada con éxito!");
-        System.out.printf("Producto: %s | Cantidad: %d | Total: Q%.2f\n", producto.getNombre(), cantidad, total);
-        System.out.println("Stock restante de " + producto.getNombre() + ": " + producto.getStock());
-        return true;
+        p.reducirStock(cantidad);
+        return p.getPrecio() * cantidad;
     }
 }
