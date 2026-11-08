@@ -24,6 +24,9 @@ public class Tienda {
         Utilidades.imprimirArreglo(productos);
     }
 
+    /**
+     * Realiza la venta validando reglas de negocio y lanzando excepciones.
+     */
     public double vender(int posicion, int cantidad) throws CantidadInvalidaException, StockInsuficienteException {
         if (posicion < 0 || posicion >= productos.length || productos[posicion] == null) {
             throw new IllegalArgumentException("El producto seleccionado no existe.");
