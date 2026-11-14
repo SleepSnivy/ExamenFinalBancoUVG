@@ -88,7 +88,10 @@ public class Main extends Application {
         VBox raiz = new VBox(encabezado, contenido);
 
         Scene escena = new Scene(raiz, 540, 600);
-        escena.getStylesheets().add(getClass().getResource("/estilos.css").toExternalForm());
+        var css = getClass().getResource("/estilos.css");
+        if (css != null) {
+            escena.getStylesheets().add(css.toExternalForm());
+        }
 
         ventana.setTitle("UVG Store");
         ventana.setScene(escena);
