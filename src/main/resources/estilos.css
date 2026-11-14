@@ -1,0 +1,114 @@
+/* Estilos de UVG Store (colores de UVG: verde) */
+
+.root {
+    -fx-font-family: "Segoe UI", Arial, sans-serif;
+    -fx-background-color: #f2f5f3;
+}
+
+.encabezado {
+    -fx-background-color: #00502f;
+    -fx-padding: 18 24 18 24;
+}
+
+.titulo {
+    -fx-text-fill: white;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.subtitulo {
+    -fx-text-fill: #cfe8dc;
+    -fx-font-size: 12px;
+}
+
+.tarjeta {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.12), 10, 0, 0, 2);
+}
+
+.seccion {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #00502f;
+}
+
+.text-area {
+    -fx-font-family: Consolas, monospace;
+    -fx-font-size: 13px;
+}
+
+.text-area .content {
+    -fx-background-color: #f8faf9;
+    -fx-background-radius: 8;
+}
+
+.text-field {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #cfd8d3;
+    -fx-padding: 8 10 8 10;
+}
+
+.text-field:focused {
+    -fx-border-color: #009739;
+}
+
+.boton-primario {
+    -fx-background-color: #009739;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+}
+
+.boton-primario:hover {
+    -fx-background-color: #00782d;
+}
+
+.boton-secundario {
+    -fx-background-color: #e3ece7;
+    -fx-text-fill: #00502f;
+    -fx-background-radius: 8;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+}
+
+.boton-secundario:hover {
+    -fx-background-color: #d2e2d9;
+}
+
+.boton-salir {
+    -fx-background-color: #fbe9e9;
+    -fx-text-fill: #b3261e;
+    -fx-background-radius: 8;
+    -fx-padding: 8 20 8 20;
+    -fx-cursor: hand;
+}
+
+.boton-salir:hover {
+    -fx-background-color: #f5d3d3;
+}
+
+.mensaje {
+    -fx-background-radius: 8;
+    -fx-padding: 10 14 10 14;
+    -fx-font-size: 13px;
+}
+
+.mensaje-info {
+    -fx-background-color: #e8eeeb;
+    -fx-text-fill: #33443c;
+}
+
+.mensaje-ok {
+    -fx-background-color: #e1f4e8;
+    -fx-text-fill: #1b6b3a;
+}
+
+.mensaje-error {
+    -fx-background-color: #fde8e8;
+    -fx-text-fill: #b3261e;
+}

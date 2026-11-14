@@ -6,8 +6,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -22,10 +24,12 @@ public class Main extends Application {
 
     private Tienda tienda = new Tienda();
 
-    private TextArea areaCatalogo = new TextArea();
-    private TextField campoPosicion = new TextField();
+    // Un botón por producto (misma posición que en el arreglo de la tienda)
+    private ToggleButton[] botonesProductos;
+    private ToggleGroup grupoProductos = new ToggleGroup();
+
     private TextField campoCantidad = new TextField();
-    private Label etiquetaMensaje = new Label("Bienvenido a UVG Store");
+    private Label etiquetaMensaje = new Label("Seleccione un producto para comenzar");
 
     @Override
     public void start(Stage ventana) {
@@ -37,28 +41,24 @@ public class Main extends Application {
         VBox encabezado = new VBox(2, titulo, subtitulo);
         encabezado.getStyleClass().add("encabezado");
 
-        // ----- Tarjeta del catálogo -----
-        Label tituloCatalogo = new Label("Catálogo");
+        // ----- Tarjeta de productos (un botón por producto) -----
+        Label tituloCatalogo = new Label("Elija un producto");
         tituloCatalogo.getStyleClass().add("seccion");
-        areaCatalogo.setEditable(false);
-        areaCatalogo.setPrefHeight(190);
-        actualizarCatalogo();
-        VBox tarjetaCatalogo = new VBox(10, tituloCatalogo, areaCatalogo);
+        VBox listaProductos = crearBotonesProductos();
+        VBox tarjetaCatalogo = new VBox(10, tituloCatalogo, listaProductos);
         tarjetaCatalogo.getStyleClass().add("tarjeta");
 
         // ----- Tarjeta de compra -----
         Label tituloCompra = new Label("Registrar compra");
         tituloCompra.getStyleClass().add("seccion");
-        campoPosicion.setPromptText("Posición (ej. 2)");
         campoCantidad.setPromptText("Cantidad");
-        HBox.setHgrow(campoPosicion, Priority.ALWAYS);
         HBox.setHgrow(campoCantidad, Priority.ALWAYS);
 
         Button botonComprar = new Button("Comprar");
         botonComprar.getStyleClass().add("boton-primario");
         botonComprar.setOnAction(e -> comprar());
 
-        HBox formulario = new HBox(10, campoPosicion, campoCantidad, botonComprar);
+        HBox formulario = new HBox(10, campoCantidad, botonComprar);
         VBox tarjetaCompra = new VBox(10, tituloCompra, formulario);
         tarjetaCompra.getStyleClass().add("tarjeta");
 
@@ -67,27 +67,18 @@ public class Main extends Application {
         etiquetaMensaje.setMaxWidth(Double.MAX_VALUE);
         etiquetaMensaje.setWrapText(true);
 
-        // ----- Botones inferiores -----
-        Button botonInventario = new Button("Ver inventario");
-        botonInventario.getStyleClass().add("boton-secundario");
-        botonInventario.setOnAction(e -> {
-            actualizarCatalogo();
-            mostrarMensaje("Inventario actualizado.", false);
-        });
-
+        // ----- Botón de salida -----
         Button botonSalir = new Button("Salir");
         botonSalir.getStyleClass().add("boton-salir");
         botonSalir.setOnAction(e -> salir());
 
-        HBox botones = new HBox(10, botonInventario, botonSalir);
-
         // ----- Contenido y escena -----
-        VBox contenido = new VBox(14, tarjetaCatalogo, tarjetaCompra, etiquetaMensaje, botones);
+        VBox contenido = new VBox(14, tarjetaCatalogo, tarjetaCompra, etiquetaMensaje, botonSalir);
         contenido.setPadding(new Insets(18));
 
         VBox raiz = new VBox(encabezado, contenido);
 
-        Scene escena = new Scene(raiz, 540, 600);
+        Scene escena = new Scene(raiz, 540, 700);
         escena.getStylesheets().add(getClass().getResource("/estilos.css").toExternalForm());
 
         ventana.setTitle("UVG Store");
@@ -95,33 +86,63 @@ public class Main extends Application {
         ventana.show();
     }
 
-    /** Lee los campos, valida el formato y pide la venta a la Tienda. */
+    /** Crea un botón por cada producto del arreglo. */
+    private VBox crearBotonesProductos() {
+        Producto[] productos = tienda.getProductos();
+        botonesProductos = new ToggleButton[productos.length];
+        VBox caja = new VBox(8);
+
+        for (int i = 0; i < productos.length; i++) {
+            if (productos[i] != null) {
+                ToggleButton boton = new ToggleButton(productos[i].toString());
+                boton.setToggleGroup(grupoProductos);
+                boton.setUserData(i); // guarda la posición del producto
+                boton.setMaxWidth(Double.MAX_VALUE);
+                boton.getStyleClass().add("boton-producto");
+                botonesProductos[i] = boton;
+                caja.getChildren().add(boton);
+            }
+        }
+        return caja;
+    }
+
+    /** Lee el producto seleccionado y la cantidad, y pide la venta a la Tienda. */
     private void comprar() {
+        Toggle seleccionado = grupoProductos.getSelectedToggle();
+        if (seleccionado == null) {
+            mostrarMensaje("Error: seleccione un producto.", true);
+            return;
+        }
+
         try {
+            int posicion = (int) seleccionado.getUserData();
             // Si el texto no es un número, parseInt lanza NumberFormatException
-            int posicion = Integer.parseInt(campoPosicion.getText().trim());
             int cantidad = Integer.parseInt(campoCantidad.getText().trim());
 
             double total = tienda.vender(posicion, cantidad);
 
-            actualizarCatalogo();
+            actualizarBotones();
+            Utilidades.imprimirArreglo(tienda.getProductos()); // método genérico (consola)
             mostrarMensaje("Venta registrada · Total Q" + total, false);
-            campoPosicion.clear();
             campoCantidad.clear();
 
         } catch (NumberFormatException e) {
-            mostrarMensaje("Error: escriba solo números enteros.", true);
+            mostrarMensaje("Error: escriba la cantidad con números enteros.", true);
         } catch (CantidadInvalidaException | StockInsuficienteException e) {
             mostrarMensaje("Error: " + e.getMessage(), true);
         } catch (IllegalArgumentException e) {
-            // Posición que no existe en el catálogo
             mostrarMensaje("Error: " + e.getMessage(), true);
         }
     }
 
-    /** Muestra el arreglo de productos usando el método genérico. */
-    private void actualizarCatalogo() {
-        areaCatalogo.setText(Utilidades.arregloATexto(tienda.getProductos()));
+    /** Actualiza el texto de cada botón (para ver el stock nuevo). */
+    private void actualizarBotones() {
+        Producto[] productos = tienda.getProductos();
+        for (int i = 0; i < productos.length; i++) {
+            if (botonesProductos[i] != null) {
+                botonesProductos[i].setText(productos[i].toString());
+            }
+        }
     }
 
     /** Cambia el texto y el color del mensaje (verde si salió bien, rojo si hubo error). */
