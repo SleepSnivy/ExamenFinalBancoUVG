@@ -9,12 +9,14 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
  * INTERFAZ: ventana de JavaFX. Solo muestra datos y lee entradas.
  * Las reglas de venta viven en la clase Tienda.
+ * Los colores y estilos están en src/main/resources/estilos.css
  */
 public class Main extends Application {
 
@@ -27,38 +29,69 @@ public class Main extends Application {
 
     @Override
     public void start(Stage ventana) {
-        // Título
+        // ----- Encabezado -----
         Label titulo = new Label("UVG Store");
-        titulo.setStyle("-fx-font-size: 22px; -fx-font-weight: bold;");
+        titulo.getStyleClass().add("titulo");
+        Label subtitulo = new Label("Simulación de ventas de una tienda universitaria");
+        subtitulo.getStyleClass().add("subtitulo");
+        VBox encabezado = new VBox(2, titulo, subtitulo);
+        encabezado.getStyleClass().add("encabezado");
 
-        // Catálogo (solo lectura)
+        // ----- Tarjeta del catálogo -----
+        Label tituloCatalogo = new Label("Catálogo");
+        tituloCatalogo.getStyleClass().add("seccion");
         areaCatalogo.setEditable(false);
-        areaCatalogo.setPrefHeight(200);
+        areaCatalogo.setPrefHeight(190);
         actualizarCatalogo();
+        VBox tarjetaCatalogo = new VBox(10, tituloCatalogo, areaCatalogo);
+        tarjetaCatalogo.getStyleClass().add("tarjeta");
 
-        // Formulario de compra
+        // ----- Tarjeta de compra -----
+        Label tituloCompra = new Label("Registrar compra");
+        tituloCompra.getStyleClass().add("seccion");
         campoPosicion.setPromptText("Posición (ej. 2)");
         campoCantidad.setPromptText("Cantidad");
-        Button botonComprar = new Button("Comprar");
-        botonComprar.setOnAction(e -> comprar());
-        HBox formulario = new HBox(10, campoPosicion, campoCantidad, botonComprar);
+        HBox.setHgrow(campoPosicion, Priority.ALWAYS);
+        HBox.setHgrow(campoCantidad, Priority.ALWAYS);
 
-        // Botones de inventario y salida
+        Button botonComprar = new Button("Comprar");
+        botonComprar.getStyleClass().add("boton-primario");
+        botonComprar.setOnAction(e -> comprar());
+
+        HBox formulario = new HBox(10, campoPosicion, campoCantidad, botonComprar);
+        VBox tarjetaCompra = new VBox(10, tituloCompra, formulario);
+        tarjetaCompra.getStyleClass().add("tarjeta");
+
+        // ----- Mensajes -----
+        etiquetaMensaje.getStyleClass().addAll("mensaje", "mensaje-info");
+        etiquetaMensaje.setMaxWidth(Double.MAX_VALUE);
+        etiquetaMensaje.setWrapText(true);
+
+        // ----- Botones inferiores -----
         Button botonInventario = new Button("Ver inventario");
+        botonInventario.getStyleClass().add("boton-secundario");
         botonInventario.setOnAction(e -> {
             actualizarCatalogo();
             mostrarMensaje("Inventario actualizado.", false);
         });
+
         Button botonSalir = new Button("Salir");
+        botonSalir.getStyleClass().add("boton-salir");
         botonSalir.setOnAction(e -> salir());
+
         HBox botones = new HBox(10, botonInventario, botonSalir);
 
-        VBox raiz = new VBox(10, titulo, new Label("Catálogo:"), areaCatalogo,
-                formulario, botones, etiquetaMensaje);
-        raiz.setPadding(new Insets(15));
+        // ----- Contenido y escena -----
+        VBox contenido = new VBox(14, tarjetaCatalogo, tarjetaCompra, etiquetaMensaje, botones);
+        contenido.setPadding(new Insets(18));
+
+        VBox raiz = new VBox(encabezado, contenido);
+
+        Scene escena = new Scene(raiz, 540, 600);
+        escena.getStylesheets().add(getClass().getResource("/estilos.css").toExternalForm());
 
         ventana.setTitle("UVG Store");
-        ventana.setScene(new Scene(raiz, 480, 450));
+        ventana.setScene(escena);
         ventana.show();
     }
 
@@ -91,9 +124,11 @@ public class Main extends Application {
         areaCatalogo.setText(Utilidades.arregloATexto(tienda.getProductos()));
     }
 
+    /** Cambia el texto y el color del mensaje (verde si salió bien, rojo si hubo error). */
     private void mostrarMensaje(String texto, boolean esError) {
         etiquetaMensaje.setText(texto);
-        etiquetaMensaje.setStyle(esError ? "-fx-text-fill: red;" : "-fx-text-fill: green;");
+        etiquetaMensaje.getStyleClass().removeAll("mensaje-info", "mensaje-ok", "mensaje-error");
+        etiquetaMensaje.getStyleClass().add(esError ? "mensaje-error" : "mensaje-ok");
     }
 
     /** Salida controlada: pide confirmación antes de cerrar. */
