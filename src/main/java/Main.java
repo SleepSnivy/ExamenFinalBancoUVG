@@ -16,24 +16,26 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- * INTERFAZ: ventana de JavaFX. Solo muestra datos y lee entradas.
  * Las reglas de venta viven en la clase Tienda.
- * Los colores y estilos están en src/main/resources/estilos.css
+ * Los colores y estilos se definen en estilos.css.
  */
 public class Main extends Application {
 
     private Tienda tienda = new Tienda();
 
-    // Un botón por producto (misma posición que en el arreglo de la tienda)
+    // Un botón por producto
     private ToggleButton[] botonesProductos;
     private ToggleGroup grupoProductos = new ToggleGroup();
+
+    // Historial de ventas (máximo 50 ventas)
+    private String[] historial = new String[50];
+    private int totalVentas = 0;
 
     private TextField campoCantidad = new TextField();
     private Label etiquetaMensaje = new Label("Seleccione un producto para comenzar");
 
     @Override
     public void start(Stage ventana) {
-        // ----- Encabezado -----
         Label titulo = new Label("UVG Store");
         titulo.getStyleClass().add("titulo");
         Label subtitulo = new Label("Simulación de ventas de una tienda universitaria");
@@ -41,14 +43,14 @@ public class Main extends Application {
         VBox encabezado = new VBox(2, titulo, subtitulo);
         encabezado.getStyleClass().add("encabezado");
 
-        // ----- Tarjeta de productos (un botón por producto) -----
+        //Tarjeta de productos (un botón por producto
         Label tituloCatalogo = new Label("Elija un producto");
         tituloCatalogo.getStyleClass().add("seccion");
         VBox listaProductos = crearBotonesProductos();
         VBox tarjetaCatalogo = new VBox(10, tituloCatalogo, listaProductos);
         tarjetaCatalogo.getStyleClass().add("tarjeta");
 
-        // ----- Tarjeta de compra -----
+        //Tarjeta de compra
         Label tituloCompra = new Label("Registrar compra");
         tituloCompra.getStyleClass().add("seccion");
         campoCantidad.setPromptText("Cantidad");
@@ -62,18 +64,24 @@ public class Main extends Application {
         VBox tarjetaCompra = new VBox(10, tituloCompra, formulario);
         tarjetaCompra.getStyleClass().add("tarjeta");
 
-        // ----- Mensajes -----
+        //Mensajes
         etiquetaMensaje.getStyleClass().addAll("mensaje", "mensaje-info");
         etiquetaMensaje.setMaxWidth(Double.MAX_VALUE);
         etiquetaMensaje.setWrapText(true);
 
-        // ----- Botón de salida -----
+        //Botones inferiores
+        Button botonHistorial = new Button("Historial");
+        botonHistorial.getStyleClass().add("boton-secundario");
+        botonHistorial.setOnAction(e -> verHistorial());
+
         Button botonSalir = new Button("Salir");
         botonSalir.getStyleClass().add("boton-salir");
         botonSalir.setOnAction(e -> salir());
 
-        // ----- Contenido y escena -----
-        VBox contenido = new VBox(14, tarjetaCatalogo, tarjetaCompra, etiquetaMensaje, botonSalir);
+        HBox botones = new HBox(10, botonHistorial, botonSalir);
+
+        //Contenido y escena
+        VBox contenido = new VBox(14, tarjetaCatalogo, tarjetaCompra, etiquetaMensaje, botones);
         contenido.setPadding(new Insets(18));
 
         VBox raiz = new VBox(encabezado, contenido);
@@ -86,7 +94,7 @@ public class Main extends Application {
         ventana.show();
     }
 
-    /** Crea un botón por cada producto del arreglo. */
+    //Crea un botón por cada producto del arreglo
     private VBox crearBotonesProductos() {
         Producto[] productos = tienda.getProductos();
         botonesProductos = new ToggleButton[productos.length];
@@ -106,7 +114,7 @@ public class Main extends Application {
         return caja;
     }
 
-    /** Lee el producto seleccionado y la cantidad, y pide la venta a la Tienda. */
+    //Lee el producto seleccionado y la cantidad, y pide la venta a la tienda
     private void comprar() {
         Toggle seleccionado = grupoProductos.getSelectedToggle();
         if (seleccionado == null) {
@@ -119,7 +127,9 @@ public class Main extends Application {
             // Si el texto no es un número, parseInt lanza NumberFormatException
             int cantidad = Integer.parseInt(campoCantidad.getText().trim());
 
+            String nombre = tienda.getProductos()[posicion].getNombre();
             double total = tienda.vender(posicion, cantidad);
+            registrarVenta(nombre, cantidad, total);
 
             actualizarBotones();
             Utilidades.imprimirArreglo(tienda.getProductos()); // método genérico (consola)
@@ -135,7 +145,28 @@ public class Main extends Application {
         }
     }
 
-    /** Actualiza el texto de cada botón (para ver el stock nuevo). */
+    //Guarda una venta exitosa en el arreglo del historial
+    private void registrarVenta(String nombre, int cantidad, double total) {
+        if (totalVentas < historial.length) {
+            historial[totalVentas] = nombre + " x" + cantidad + " · Q" + total;
+            totalVentas++;
+        }
+    }
+
+    //Muestra las ventas registradas usando el método genérico
+    private void verHistorial() {
+        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
+        alerta.setTitle("Historial");
+        alerta.setHeaderText("Historial de ventas");
+        if (totalVentas == 0) {
+            alerta.setContentText("Aún no hay ventas registradas.");
+        } else {
+            alerta.setContentText(Utilidades.arregloATexto(historial));
+        }
+        alerta.showAndWait();
+    }
+
+    //Actualiza el texto de cada botón para ver el stock nuevo
     private void actualizarBotones() {
         Producto[] productos = tienda.getProductos();
         for (int i = 0; i < productos.length; i++) {
@@ -145,14 +176,14 @@ public class Main extends Application {
         }
     }
 
-    /** Cambia el texto y el color del mensaje (verde si salió bien, rojo si hubo error). */
+    //Cambia el texto y el color del mensaje, verde si salió bien, rojo si hubo error
     private void mostrarMensaje(String texto, boolean esError) {
         etiquetaMensaje.setText(texto);
         etiquetaMensaje.getStyleClass().removeAll("mensaje-info", "mensaje-ok", "mensaje-error");
         etiquetaMensaje.getStyleClass().add(esError ? "mensaje-error" : "mensaje-ok");
     }
 
-    /** Salida controlada: pide confirmación antes de cerrar. */
+    //Salida controlada
     private void salir() {
         Alert alerta = new Alert(Alert.AlertType.CONFIRMATION,
                 "¿Desea salir del programa?", ButtonType.YES, ButtonType.NO);
