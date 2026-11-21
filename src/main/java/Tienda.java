@@ -3,11 +3,11 @@ public class Tienda {
 
     public Tienda() {
         productos = new Producto[5];
-        productos[0] = new Producto("0", "Cuaderno UVG", 25.00, 10);
-        productos[1] = new Producto("1", "Galleta Nutritiva", 6.00, 20);
-        productos[2] = new ProductoEspecial("2", "Termo UVG", 65.00, 5, "Promocional");
-        productos[3] = new Producto("3", "Lapicero Azul", 4.50, 50);
-        productos[4] = new ProductoEspecial("4", "Playera UVG", 120.00, 8, "Ropa");
+        productos[0] = new Producto("0", "Cuaderno", 25, 10);
+        productos[1] = new Producto("1", "Galleta", 6, 20);
+        productos[2] = new ProductoEspecial("2", "Termo UVG", 65, 5, "Promocional");
+        productos[3] = new Producto("3", "Lapicero", 5, 30);
+        productos[4] = new ProductoEspecial("4", "Sudadera UVG", 150, 8, "Ropa");
     }
 
     public Producto[] getProductos() {
@@ -15,19 +15,17 @@ public class Tienda {
     }
 
     public void mostrarCatalogo() {
-        System.out.println("\n--- CATÁLOGO DE PRODUCTOS ---");
+        System.out.println("\nCatálogo");
         Utilidades.imprimirArreglo(productos);
     }
 
     public void mostrarInventario() {
-        System.out.println("\n--- INVENTARIO ACTUALIZADO ---");
+        System.out.println("\nInventario actualizado");
         Utilidades.imprimirArreglo(productos);
     }
 
-    /**
-     * Realiza la venta validando reglas de negocio y lanzando excepciones.
-     */
-    public double vender(int posicion, int cantidad) throws CantidadInvalidaException, StockInsuficienteException {
+    public double vender(int posicion, int cantidad)
+            throws CantidadInvalidaException, StockInsuficienteException {
         if (posicion < 0 || posicion >= productos.length || productos[posicion] == null) {
             throw new IllegalArgumentException("El producto seleccionado no existe.");
         }
@@ -36,13 +34,15 @@ public class Tienda {
             throw new CantidadInvalidaException("La cantidad debe ser mayor a cero.");
         }
 
-        Producto p = productos[posicion];
+        Producto producto = productos[posicion];
 
-        if (cantidad > p.getStock()) {
-            throw new StockInsuficienteException("Stock insuficiente para " + p.getNombre() + " (Disponibles: " + p.getStock() + ").");
+        if (!producto.tieneStockSuficiente(cantidad)) {
+            throw new StockInsuficienteException(
+                "Stock insuficiente para " + producto.getNombre() + "; no se modifica inventario."
+            );
         }
 
-        p.reducirStock(cantidad);
-        return p.getPrecio() * cantidad;
+        producto.reducirStock(cantidad);
+        return producto.getPrecio() * cantidad;
     }
 }
