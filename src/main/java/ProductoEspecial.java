@@ -1,4 +1,3 @@
-/Clase hija/
 public class ProductoEspecial extends Producto {
     private String categoria;
 
@@ -7,10 +6,13 @@ public class ProductoEspecial extends Producto {
         this.categoria = categoria;
     }
 
-    public String getCategoria() { return categoria; }
+    public String getCategoria() {
+        return categoria;
+    }
 
     @Override
     public String obtenerDetalle() {
-        return super.obtenerDetalle() + " (" + categoria + ")";
+        String extra = (categoria != null && !categoria.trim().isEmpty()) ? " (" + categoria + ")" : "";
+        return super.obtenerDetalle() + extra;
     }
 }
