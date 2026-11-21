@@ -1,6 +1,6 @@
 # ExamenFinalBancoUVG
 #Integrantes:
-Carlos Manuel Murcia Perez - [Main, utilidades, gitignore]
+Carlos Manuel Murcia Perez - 
 Marlen Castillo
 Jasmin Reyes
 
